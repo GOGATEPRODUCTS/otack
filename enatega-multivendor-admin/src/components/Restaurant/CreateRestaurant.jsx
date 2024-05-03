@@ -17,7 +17,9 @@ import {
   Select,
   OutlinedInput,
   MenuItem,
-  ListItemText
+  ListItemText,
+  IconButton,
+  Modal
 } from '@mui/material'
 
 import ConfigurableValues from '../../config/constants'
@@ -27,6 +29,7 @@ import useGlobalStyles from '../../utils/globalStyles'
 import InputAdornment from '@mui/material/InputAdornment'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff'
+import CloseIcon from '@mui/icons-material/Close';
 import { SHOP_TYPE } from '../../utils/enums'
 import Dropdown from '../Dropdown'
 
@@ -66,10 +69,14 @@ const CreateRestaurant = props => {
   const [minimumOrderError, setMinimumOrderError] = useState(null)
   const [salesTaxError, setSalesTaxError] = useState(null)
   const [restaurantCuisines, setRestaurantCuisines] = React.useState([])
-
   // const [shopType, setShopType] = useState(SHOP_TYPE.RESTAURANT)
   const [errors, setErrors] = useState('')
   const [success, setSuccess] = useState('')
+  const [open, setOpen] = React.useState(true)
+
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+
   const onCompleted = data => {
     console.log('on complete here')
     setNameError(null)
@@ -166,7 +173,7 @@ const CreateRestaurant = props => {
     }
   }
 
-  const onSubmitValidaiton = data => {
+  const onSubmitValidation = data => {
     const form = formRef.current
     const name = form.name.value
     const address = form.address.value
@@ -248,6 +255,12 @@ const CreateRestaurant = props => {
     setImgUrl('')
   }
 
+
+
+  const handleContainerClick = (e) => {
+    e.stopPropagation();
+  };
+ 
   const handleCuisineChange = event => {
     const {
       target: { value }
@@ -262,7 +275,8 @@ const CreateRestaurant = props => {
 
 
   return (
-    <Box container className={classes.container}>
+  <Modal open={open} onClose={handleClose} disableBackdropClick>
+   <Box container className={classes.container} onClick={handleContainerClick}>
       <Box style={{ alignItems: 'start' }} className={classes.flexRow}>
         <Box item className={classes.heading}>
           <Typography variant="h6" className={classes.text}>
@@ -273,8 +287,10 @@ const CreateRestaurant = props => {
           <label>{t('Available')}</label>
           <Switch defaultChecked style={{ color: 'black' }} />
         </Box>
+        <IconButton onClick={handleClose}>
+          <CloseIcon /> {/* Close icon */}
+        </IconButton>
       </Box>
-
       <Box className={classes.form}>
         <form ref={formRef}>
           <Grid container spacing={2}>
@@ -530,8 +546,10 @@ const CreateRestaurant = props => {
                disabled={loading}
                 onClick={async e => {
                 e.preventDefault()
-                const isValid = onSubmitValidaiton()
+
+              const isValid = onSubmitValidaiton()
                 if (isValid) {
+
                   const imgUpload = await uploadImageToCloudinary()
                   const form = formRef.current
                   const name = form.name.value
@@ -585,6 +603,7 @@ const CreateRestaurant = props => {
         </Box>
       </Box>
     </Box>
+  </Modal>
   )
 }
 export default withTranslation()(CreateRestaurant)
