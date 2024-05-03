@@ -14,13 +14,14 @@ const styles = (props = null) =>
     },
     searchbar: {
       ...alignment.PBmedium,
-      backgroundColor: props != null ? props.main : '#FFF'
+      backgroundColor: props != null ? props.white : '#FFF'
     },
 
     mainContentContainer: {
       width: '100%',
-      height: '100%',
-      alignSelf: 'center'
+      height: '80%',
+      alignSelf: 'center',
+      // backgroundColor: 'red'
     },
 
     ML20: {
@@ -161,6 +162,43 @@ const styles = (props = null) =>
       fontWeight: '300',
       textAlign: 'justify',
       paddingLeft: scale(38)
+    },
+    collectionCard: {
+      backgroundColor: props !== null ? props.white : '#fff',
+      height: 130,
+      width: 100,
+      borderRadius: 8,
+      shadowColor: 'gray',
+      shadowOffset: {
+        width: 0,
+        height: 2
+      },
+      shadowOpacity: 0.25,
+      shadowRadius: 3.84,
+      elevation: 5
+    },
+    collectionImage: {
+      height: 80,
+      width: '100%',
+      borderTopLeftRadius: 8,
+      borderTopRightRadius: 8
+    },
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      ...alignment.MLmedium,
+      ...alignment.MRmedium,
+      ...alignment.MTsmall,
+      
+    },
+    seeAllBtn: {
+      backgroundColor: props != null ? props.newButtonBackground : '#F3FFEE',
+      borderRadius: 4,
+      paddingTop: 8,
+      paddingBottom: 8,
+      paddingLeft: 16,
+      paddingRight: 16,
     }
   })
 export default styles

@@ -12,20 +12,14 @@ import {
   TouchableOpacity,
   StatusBar,
   Platform,
-  Image,
   ScrollView,
-  Animated,
-  RefreshControl,
 } from 'react-native'
 import {
-  MaterialIcons,
   AntDesign,
   SimpleLineIcons
 } from '@expo/vector-icons'
 import { useMutation, useQuery, gql } from '@apollo/client'
-import { useCollapsibleSubHeader } from 'react-navigation-collapsible'
 import { useLocation } from '../../ui/hooks'
-import Search from '../../components/Main/Search/Search'
 import UserContext from '../../context/User'
 import { getBanners, restaurantListPreview } from '../../apollo/queries'
 import { selectAddress } from '../../apollo/mutations'
@@ -37,12 +31,10 @@ import { theme } from '../../utils/themeColors'
 import navigationOptions from './navigationOptions'
 import TextDefault from '../../components/Text/TextDefault/TextDefault'
 import { LocationContext } from '../../context/Location'
-import { alignment } from '../../utils/alignment'
 import analytics from '../../utils/analytics'
 import { useTranslation } from 'react-i18next'
 import MainRestaurantCard from '../../components/Main/MainRestaurantCard/MainRestaurantCard'
 import { TopBrands } from '../../components/Main/TopBrands'
-import Item from '../../components/Main/Item/Item'
 import CustomHomeIcon from '../../assets/SVG/imageComponents/CustomHomeIcon'
 import CustomOtherIcon from '../../assets/SVG/imageComponents/CustomOtherIcon'
 import CustomWorkIcon from '../../assets/SVG/imageComponents/CustomWorkIcon'
@@ -71,9 +63,8 @@ function Main(props) {
 
   const { t } = useTranslation()
   const [busy, setBusy] = useState(false)
-  const { loadingOrders, isLoggedIn, profile } = useContext(UserContext)
+  const { isLoggedIn, profile } = useContext(UserContext)
   const { location, setLocation } = useContext(LocationContext)
-  const [search, setSearch] = useState('')
   const modalRef = useRef(null)
   const navigation = useNavigation()
   const themeContext = useContext(ThemeContext)
@@ -81,7 +72,7 @@ function Main(props) {
   const { getCurrentLocation } = useLocation()
   const locationData = location
   const [hasActiveOrders, setHasActiveOrders] = useState(false)
-  const { data, refetch, networkStatus, loading, error } = useQuery(
+  const { data, loading, error } = useQuery(
     RESTAURANTS,
     {
       variables: {
@@ -102,13 +93,11 @@ function Main(props) {
   // console.log('banners => ', JSON.stringify(banners, null, 3))
   const { orderLoading, orderError, orderData } = useHomeRestaurants()
 
-  const [mutate, { loading: mutationLoading }] = useMutation(SELECT_ADDRESS, {
+  const [mutate] = useMutation(SELECT_ADDRESS, {
     onError
   })
   const recentOrderRestaurantsVar = orderData?.recentOrderRestaurants
   const mostOrderedRestaurantsVar = orderData?.mostOrderedRestaurants
-  // console.log('mostOrderedRestaurantsVar => ', JSON.stringify(mostOrderedRestaurantsVar[0], null, 3))
-  const newheaderColor = currentTheme.newheaderColor
 
   const handleActiveOrdersChange = (activeOrdersExist) => {
     setHasActiveOrders(activeOrdersExist)
@@ -155,12 +144,6 @@ function Main(props) {
     Apartment: CustomApartmentIcon,
     Other: CustomOtherIcon
   }
-
-  const {
-    onScroll /* Event handler */,
-    containerPaddingTop /* number */,
-    scrollIndicatorInsetTop /* number */
-  } = useCollapsibleSubHeader()
 
   const setAddressLocation = async (address) => {
     setLocation({
@@ -235,24 +218,6 @@ function Main(props) {
     </View>
   )
 
-  const emptyView = () => {
-    if (loading || mutationLoading || loadingOrders) return <MainLoadingUI />
-    else {
-      return (
-        <View style={styles(currentTheme).emptyViewContainer}>
-          <View style={styles(currentTheme).emptyViewBox}>
-            <TextDefault bold H4 center textColor={currentTheme.fontMainColor}>
-              {t('notAvailableinYourArea')}
-            </TextDefault>
-            <TextDefault textColor={currentTheme.fontGrayNew} center>
-              {t('noRestaurant')}
-            </TextDefault>
-          </View>
-        </View>
-      )
-    }
-  }
-
   const modalFooter = () => (
     <View style={styles().addNewAddressbtn}>
       <View style={styles(currentTheme).addressContainer}>
@@ -288,22 +253,6 @@ function Main(props) {
     </View>
   )
 
-  const restaurants = data?.nearByRestaurantsPreview?.restaurants
-
-  const searchAllShops = (searchText) => {
-    const data = []
-    const regex = new RegExp(searchText, 'i')
-    restaurants?.forEach((restaurant) => {
-      const resultCatFoods = restaurant.keywords.some((keyword) => {
-        const result = keyword.search(regex)
-        return result > -1
-      })
-      if (resultCatFoods)
-        data.push(restaurant)
-    })
-    return data
-  }
-
   if (error) return <ErrorView />
 
 
@@ -314,51 +263,6 @@ function Main(props) {
           <View style={styles().flex}>
             <View style={styles().mainContentContainer}>
               <View style={[styles().flex, styles().subContainer]}>
-                <View style={styles(currentTheme).searchbar}>
-                  <Search
-                    setSearch={setSearch}
-                    search={search}
-                    newheaderColor={newheaderColor}
-                    placeHolder={t('searchRestaurant')}
-                  />
-                </View>
-                {search ? (
-                  <View style={styles().searchList}>
-                    <Animated.FlatList
-                      contentInset={{
-                        top: containerPaddingTop
-                      }}
-                      contentContainerStyle={{
-                        paddingTop:
-                          Platform.OS === 'ios' ? 0 : containerPaddingTop
-                      }}
-                      contentOffset={{
-                        y: -containerPaddingTop
-                      }}
-                      onScroll={onScroll}
-                      scrollIndicatorInsets={{
-                        top: scrollIndicatorInsetTop
-                      }}
-                      showsVerticalScrollIndicator={false}
-                      ListEmptyComponent={emptyView()}
-                      keyExtractor={(item, index) => index.toString()}
-                      refreshControl={
-                        <RefreshControl
-                          progressViewOffset={containerPaddingTop}
-                          colors={[currentTheme.iconColorPink]}
-                          refreshing={networkStatus === 4}
-                          onRefresh={() => {
-                            if (networkStatus === 7) {
-                              refetch()
-                            }
-                          }}
-                        />
-                      }
-                      data={searchAllShops(search)}
-                      renderItem={({ item }) => <Item item={item} />}
-                    />
-                  </View>
-                ) : (
                   <ScrollView
                     showsVerticalScrollIndicator={false}
                     showsHorizontalScrollIndicator={false}
@@ -450,7 +354,6 @@ function Main(props) {
                       {orderLoading ? <TopBrandsLoadingUI /> : <TopBrands />}
                     </View>
                   </ScrollView>
-                )}
               </View>
             </View>
           </View>
